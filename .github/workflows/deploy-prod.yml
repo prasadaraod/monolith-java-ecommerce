@@ -1,17 +1,23 @@
-name: Deploy Monolith to Production
+name: Deploy Dynamic Java Monolith to Production
 
 on:
   push:
     branches:
       - prod
 
+env:
+  PROJECT_ID: project-d1f3a8c7-60fa-4453-8c4
+  REGION: asia-south1
+  SERVICE_NAME: monolith-ecommerce-prod
+  IMAGE_NAME: asia-south1-docker.pkg.dev/project-d1f3a8c7-60fa-4453-8c4/ecommerce-repo/monolith-app
+
 jobs:
-  deploy-static:
-    name: Deploy Static Files to GCS
+  build-and-deploy:
+    name: Build & Deploy to Cloud Run
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Source Code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
@@ -22,8 +28,18 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Sync Files to Cloud Storage Bucket
+      - name: Configure Docker Auth for Artifact Registry
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
+
+      - name: Build and Push Docker Image
         run: |
-          gcloud storage rsync . gs://monolith-static-prasadaraodarla \
-            --recursive \
-            --exclude=".git/*|.github/*|README.md"
+          docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+          docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Deploy to Google Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          flags: '--allow-unauthenticated'
