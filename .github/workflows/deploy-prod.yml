@@ -42,4 +42,7 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          flags: '--allow-unauthenticated'
+          flags: |
+            --allow-unauthenticated
+            --add-cloudsql-instances=${{ secrets.CLOUD_SQL_CONNECTION_NAME }}
+            --set-env-vars=DB_NAME=ecommerce_db,DB_USER=ecommerce_app,CLOUD_SQL_CONNECTION_NAME=${{ secrets.CLOUD_SQL_CONNECTION_NAME }},DB_PASS=${{ secrets.DB_PASS }}
