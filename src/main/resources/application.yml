@@ -2,14 +2,15 @@ server:
   port: ${PORT:8080}
 
 spring:
+  cloud:
+    gcp:
+      sql:
+        enabled: true
+        instance-connection-name: ${CLOUD_SQL_CONNECTION_NAME}
+        database-name: ${DB_NAME:ecommerce_db}
   datasource:
-    url: jdbc:postgresql:///${DB_NAME:ecommerce_db}?cloudSqlInstance=${CLOUD_SQL_CONNECTION_NAME}&socketFactory=com.google.cloud.sql.postgres.SocketFactory&user=${DB_USER:ecommerce_app}&password=${DB_PASS}
     username: ${DB_USER:ecommerce_app}
     password: ${DB_PASS}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      connection-timeout: 30000
-      maximum-pool-size: 5
   jpa:
     hibernate:
       ddl-auto: update
@@ -18,9 +19,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        jdbc:
-          lob:
-            non_contextual_creation: true
 
 management:
   endpoints:
