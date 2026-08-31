@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql:///${DB_NAME:ecommerce_db}?cloudSqlInstance=${CLOUD_SQL_CONNECTION_NAME}&socketFactory=com.google.cloud.sql.postgres.SocketFactory
+    url: jdbc:postgresql:///${DB_NAME:ecommerce_db}?host=/cloudsql/${CLOUD_SQL_CONNECTION_NAME}
     username: ${DB_USER:ecommerce_app}
     password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
