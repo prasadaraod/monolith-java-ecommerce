@@ -13,12 +13,9 @@ export default function App() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [message, setMessage] = useState('');
 
-  // Password modal
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-
-  // Payment Simulation Option: "SUCCESS" or "FAILED"
   const [paymentMode, setPaymentMode] = useState('SUCCESS');
 
   useEffect(() => {
@@ -164,41 +161,41 @@ export default function App() {
   };
 
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 1100, margin: '0 auto', padding: 20 }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ddd', paddingBottom: 15 }}>
-        <h2 style={{ margin: 0 }}>Cloud Monolith Store</h2>
+    <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: 1200, margin: '0 auto', padding: '24px 20px', color: '#1f2937' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: 20 }}>
+        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>Java Monolith Store</h2>
         <div>
           {user ? (
-            <div>
-              <span>Hello, <strong>{user.fullName}</strong> ({user.role}) </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 14 }}>Hello, <strong>{user.fullName}</strong> ({user.role})</span>
               <button 
                 onClick={() => setShowPasswordModal(!showPasswordModal)} 
-                style={{ marginLeft: 10, cursor: 'pointer', padding: '4px 8px' }}
+                style={{ padding: '6px 12px', border: '1px solid #d1d5db', background: '#fff', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}
               >
                 Change Password
               </button>
               <button 
                 onClick={logout} 
-                style={{ marginLeft: 8, cursor: 'pointer', padding: '4px 8px' }}
+                style={{ padding: '6px 12px', border: '1px solid #d1d5db', background: '#fff', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}
               >
                 Logout
               </button>
             </div>
           ) : (
-            <span>Guest</span>
+            <span style={{ fontSize: 14, color: '#6b7280' }}>Guest</span>
           )}
         </div>
       </header>
 
       {message && (
-        <div style={{ background: '#eef', padding: 10, margin: '15px 0', borderRadius: 4 }}>
+        <div style={{ background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe', padding: '12px 16px', margin: '20px 0', borderRadius: 6, fontSize: 14, textAlign: 'center' }}>
           {message}
         </div>
       )}
 
       {showPasswordModal && user && (
-        <div style={{ border: '1px solid #0066cc', background: '#f8fafd', borderRadius: 6, padding: 15, margin: '15px 0' }}>
-          <h4 style={{ margin: '0 0 10px 0' }}>Change Account Password</h4>
+        <div style={{ border: '1px solid #93c5fd', background: '#f0fdf4', borderRadius: 8, padding: 16, margin: '20px 0' }}>
+          <h4 style={{ margin: '0 0 12px 0', fontSize: 15 }}>Change Account Password</h4>
           <form onSubmit={handleChangePassword} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <input
               type="password"
@@ -206,7 +203,7 @@ export default function App() {
               required
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              style={{ padding: 8, minWidth: 180 }}
+              style={{ padding: 8, minWidth: 200, border: '1px solid #d1d5db', borderRadius: 6 }}
             />
             <input
               type="password"
@@ -214,44 +211,62 @@ export default function App() {
               required
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              style={{ padding: 8, minWidth: 180 }}
+              style={{ padding: 8, minWidth: 200, border: '1px solid #d1d5db', borderRadius: 6 }}
             />
-            <button type="submit" style={{ padding: '8px 15px', cursor: 'pointer', background: '#0066cc', color: '#fff', border: 'none', borderRadius: 4 }}>
+            <button type="submit" style={{ padding: '8px 16px', cursor: 'pointer', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 500 }}>
               Update Password
             </button>
-            <button type="button" onClick={() => setShowPasswordModal(false)} style={{ padding: '8px 12px', cursor: 'pointer' }}>
+            <button type="button" onClick={() => setShowPasswordModal(false)} style={{ padding: '8px 14px', cursor: 'pointer', border: '1px solid #d1d5db', background: '#fff', borderRadius: 6 }}>
               Cancel
             </button>
           </form>
         </div>
       )}
 
-      <main style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 30, marginTop: 20 }}>
+      {/* Main layout: 1fr for product area, rigid 340px for aside */}
+      <main style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: 32, marginTop: 24, alignItems: 'start' }}>
         <section>
-          <h3>Product Catalog</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 15 }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: 18, fontWeight: 600 }}>Product Catalog</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
             {products.map(p => (
-              <div key={p.id} style={{ border: '1px solid #ccc', borderRadius: 6, padding: 15 }}>
-                <h4 style={{ margin: '0 0 8px 0' }}>{p.name}</h4>
-                <p style={{ color: '#666', fontSize: 13 }}>{p.description}</p>
-                <p><strong>₹{p.price}</strong> | Stock: {p.stockQuantity}</p>
-                <button
-                  disabled={p.stockQuantity < 1}
-                  onClick={() => addToCart(p.id)}
-                  style={{ width: '100%', padding: '8px 0', cursor: 'pointer' }}
-                >
-                  {p.stockQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
-                </button>
+              <div key={p.id} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: '#fff' }}>
+                <div>
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: 15, fontWeight: 600 }}>{p.name}</h4>
+                  <p style={{ color: '#6b7280', fontSize: 13, minHeight: 38, margin: '0 0 12px 0' }}>{p.description}</p>
+                </div>
+                <div>
+                  <p style={{ margin: '0 0 12px 0', fontSize: 14 }}>
+                    <strong style={{ fontSize: 16 }}>₹{p.price}</strong> <span style={{ color: '#6b7280' }}>| Stock: {p.stockQuantity}</span>
+                  </p>
+                  <button
+                    disabled={p.stockQuantity < 1}
+                    onClick={() => addToCart(p.id)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 0',
+                      borderRadius: 6,
+                      border: '1px solid #d1d5db',
+                      background: p.stockQuantity > 0 ? '#f9fafb' : '#f3f4f6',
+                      color: p.stockQuantity > 0 ? '#111827' : '#9ca3af',
+                      cursor: p.stockQuantity > 0 ? 'pointer' : 'not-allowed',
+                      fontWeight: 500,
+                      fontSize: 13
+                    }}
+                  >
+                    {p.stockQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </section>
 
-        <aside>
+        {/* Sidebar */}
+        <aside style={{ width: '100%', position: 'sticky', top: 20 }}>
           {!token ? (
-            <div style={{ border: '1px solid #ccc', borderRadius: 6, padding: 15 }}>
-              <h3>{isRegistering ? 'Register' : 'Login'}</h3>
-              <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 20, background: '#fff' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: 18, textAlign: 'center' }}>{isRegistering ? 'Register' : 'Login'}</h3>
+              <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {isRegistering && (
                   <input
                     type="text"
@@ -259,7 +274,7 @@ export default function App() {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    style={{ padding: 8 }}
+                    style={{ padding: 10, border: '1px solid #d1d5db', borderRadius: 6 }}
                   />
                 )}
                 <input
@@ -268,7 +283,7 @@ export default function App() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  style={{ padding: 8 }}
+                  style={{ padding: 10, border: '1px solid #d1d5db', borderRadius: 6 }}
                 />
                 <input
                   type="password"
@@ -276,50 +291,49 @@ export default function App() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  style={{ padding: 8 }}
+                  style={{ padding: 10, border: '1px solid #d1d5db', borderRadius: 6 }}
                 />
-                <button type="submit" style={{ padding: 10, cursor: 'pointer' }}>
+                <button type="submit" style={{ padding: 10, cursor: 'pointer', background: '#111827', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 500 }}>
                   {isRegistering ? 'Sign Up' : 'Log In'}
                 </button>
               </form>
               <button
                 onClick={() => setIsRegistering(!isRegistering)}
-                style={{ marginTop: 10, background: 'none', border: 'none', color: '#0066cc', cursor: 'pointer' }}
+                style={{ marginTop: 12, background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', width: '100%', fontSize: 13 }}
               >
                 {isRegistering ? 'Already have an account? Login' : 'Need an account? Register'}
               </button>
             </div>
           ) : (
-            <div style={{ border: '1px solid #ccc', borderRadius: 6, padding: 15 }}>
-              <h3>Your Cart</h3>
+            <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 20, background: '#fff' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: 18, textAlign: 'center' }}>Your Cart</h3>
               {cart && cart.items.length > 0 ? (
                 <>
-                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                     {cart.items.map(item => (
-                      <li key={item.itemId} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <li key={item.itemId} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, fontSize: 14 }}>
                         <span>{item.productName} x {item.quantity}</span>
                         <strong>₹{item.subtotal}</strong>
                       </li>
                     ))}
                   </ul>
-                  <hr />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', margin: '15px 0' }}>
-                    <strong>Total:</strong>
-                    <strong>₹{cart.totalAmount}</strong>
+                  <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '16px 0' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <span style={{ fontSize: 15 }}>Total:</span>
+                    <strong style={{ fontSize: 16 }}>₹{cart.totalAmount}</strong>
                   </div>
 
-                  {/* Dummy Payment Simulator Select */}
-                  <div style={{ margin: '15px 0', padding: 10, background: '#f5f5f5', borderRadius: 4 }}>
-                    <label style={{ display: 'block', fontSize: 13, marginBottom: 5, fontWeight: 'bold' }}>
-                      Mock Payment Gateway Status:
+                  <div style={{ margin: '16px 0', padding: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 6 }}>
+                    <label style={{ display: 'block', fontSize: 12, marginBottom: 6, fontWeight: 600, color: '#374151' }}>
+                      Mock Payment Status:
                     </label>
                     <select 
                       value={paymentMode} 
                       onChange={(e) => setPaymentMode(e.target.value)}
-                      style={{ width: '100%', padding: 6, borderRadius: 4 }}
+                      style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }}
                     >
-                      <option value="SUCCESS">Simulate Success (Mark PAID & Deduct Stock)</option>
-                      <option value="FAILED">Simulate Failure (Mark CANCELLED & Retain Stock)</option>
+                      <option value="SUCCESS">Simulate Success (PAID)</option>
+                      <option value="FAILED">Simulate Failure (CANCEL)</option>
                     </select>
                   </div>
 
@@ -327,19 +341,21 @@ export default function App() {
                     onClick={handleCheckout} 
                     style={{ 
                       width: '100%', 
-                      padding: 10, 
-                      background: paymentMode === 'SUCCESS' ? '#28a745' : '#dc3545', 
+                      padding: 12, 
+                      background: paymentMode === 'SUCCESS' ? '#16a34a' : '#dc2626', 
                       color: '#fff', 
                       border: 'none', 
-                      borderRadius: 4, 
-                      cursor: 'pointer' 
+                      borderRadius: 6, 
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      fontSize: 14
                     }}
                   >
                     {paymentMode === 'SUCCESS' ? 'Pay & Checkout' : 'Trigger Failed Payment'}
                   </button>
                 </>
               ) : (
-                <p>Your cart is empty.</p>
+                <p style={{ textAlign: 'center', color: '#6b7280', margin: '20px 0', fontSize: 14 }}>Your cart is empty.</p>
               )}
             </div>
           )}
