@@ -13,6 +13,11 @@ export default function App() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [message, setMessage] = useState('');
 
+  // Password change state
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+
   useEffect(() => {
     fetchProducts();
     if (token) {
@@ -80,11 +85,35 @@ export default function App() {
     }
   };
 
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API_BASE}/v1/users/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to change password');
+
+      setMessage('Password updated successfully!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setShowPasswordModal(false);
+    } catch (err) {
+      setMessage(err.message);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setToken('');
     setUser(null);
     setCart(null);
+    setShowPasswordModal(false);
   };
 
   const addToCart = async (productId) => {
@@ -129,13 +158,24 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 1100, margin: '0 auto', padding: 20 }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #ddd', paddingBottom: 15 }}>
-        <h2>Cloud Monolith Store</h2>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ddd', paddingBottom: 15 }}>
+        <h2 style={{ margin: 0 }}>Cloud Monolith Store</h2>
         <div>
           {user ? (
             <div>
               <span>Hello, <strong>{user.fullName}</strong> ({user.role}) </span>
-              <button onClick={logout} style={{ marginLeft: 10, cursor: 'pointer' }}>Logout</button>
+              <button 
+                onClick={() => setShowPasswordModal(!showPasswordModal)} 
+                style={{ marginLeft: 10, cursor: 'pointer', padding: '4px 8px' }}
+              >
+                Change Password
+              </button>
+              <button 
+                onClick={logout} 
+                style={{ marginLeft: 8, cursor: 'pointer', padding: '4px 8px' }}
+              >
+                Logout
+              </button>
             </div>
           ) : (
             <span>Guest</span>
@@ -146,6 +186,36 @@ export default function App() {
       {message && (
         <div style={{ background: '#eef', padding: 10, margin: '15px 0', borderRadius: 4 }}>
           {message}
+        </div>
+      )}
+
+      {showPasswordModal && user && (
+        <div style={{ border: '1px solid #0066cc', background: '#f8fafd', borderRadius: 6, padding: 15, margin: '15px 0' }}>
+          <h4 style={{ margin: '0 0 10px 0' }}>Change Account Password</h4>
+          <form onSubmit={handleChangePassword} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <input
+              type="password"
+              placeholder="Current Password"
+              required
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              style={{ padding: 8, minWidth: 180 }}
+            />
+            <input
+              type="password"
+              placeholder="New Password (min 6 chars)"
+              required
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              style={{ padding: 8, minWidth: 180 }}
+            />
+            <button type="submit" style={{ padding: '8px 15px', cursor: 'pointer', background: '#0066cc', color: '#fff', border: 'none', borderRadius: 4 }}>
+              Update Password
+            </button>
+            <button type="button" onClick={() => setShowPasswordModal(false)} style={{ padding: '8px 12px', cursor: 'pointer' }}>
+              Cancel
+            </button>
+          </form>
         </div>
       )}
 
