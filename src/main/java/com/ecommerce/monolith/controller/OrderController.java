@@ -1,7 +1,9 @@
 package com.ecommerce.monolith.controller;
 
+import com.ecommerce.monolith.dto.request.CheckoutRequest;
 import com.ecommerce.monolith.dto.response.OrderResponse;
 import com.ecommerce.monolith.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +21,11 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/checkout")
-    public ResponseEntity<OrderResponse> checkout(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<OrderResponse> checkout(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody CheckoutRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.checkout(userDetails.getUsername()));
+                .body(orderService.checkout(userDetails.getUsername(), request));
     }
 
     @GetMapping

@@ -1,17 +1,16 @@
 package com.ecommerce.monolith.service;
 
+import com.ecommerce.monolith.dto.request.CheckoutRequest;
 import com.ecommerce.monolith.dto.response.OrderResponse;
 import com.ecommerce.monolith.model.*;
-import com.ecommerce.monolith.repository.CartRepository;
-import com.ecommerce.monolith.repository.OrderRepository;
-import com.ecommerce.monolith.repository.ProductRepository;
-import com.ecommerce.monolith.repository.UserRepository;
+import com.ecommerce.monolith.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +20,10 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final PaymentRepository paymentRepository;
 
     @Transactional
-    public OrderResponse checkout(String userEmail) {
+    public OrderResponse checkout(String userEmail, CheckoutRequest request) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -36,8 +36,6 @@ public class OrderService {
 
         Order order = new Order();
         order.setUser(user);
-        order.setStatus(Order.OrderStatus.PENDING);
-
         BigDecimal total = BigDecimal.ZERO;
 
         for (CartItem cartItem : cart.getItems()) {
@@ -46,10 +44,6 @@ public class OrderService {
             if (product.getStockQuantity() < cartItem.getQuantity()) {
                 throw new IllegalStateException("Insufficient stock for product: " + product.getName());
             }
-
-            // Decrement inventory
-            product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
-            productRepository.save(product);
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
@@ -62,11 +56,36 @@ public class OrderService {
         }
 
         order.setTotalAmount(total);
+
+        boolean isPaymentSuccess = request.getSimulation() == CheckoutRequest.PaymentSimulation.SUCCESS;
+
+        if (isPaymentSuccess) {
+            order.setStatus(Order.OrderStatus.PAID);
+
+            // Deduct stock on successful payment
+            for (CartItem cartItem : cart.getItems()) {
+                Product product = cartItem.getProduct();
+                product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
+                productRepository.save(product);
+            }
+
+            // Empty the cart
+            cart.getItems().clear();
+            cartRepository.save(cart);
+        } else {
+            order.setStatus(Order.OrderStatus.CANCELLED);
+        }
+
         Order savedOrder = orderRepository.save(order);
 
-        // Clear cart after checkout
-        cart.getItems().clear();
-        cartRepository.save(cart);
+        // Record payment audit trail
+        Payment payment = new Payment();
+        payment.setOrder(savedOrder);
+        payment.setAmount(total);
+        payment.setPaymentMethod("DUMMY_GATEWAY");
+        payment.setTransactionId("TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        payment.setStatus(isPaymentSuccess ? Payment.PaymentStatus.SUCCESS : Payment.PaymentStatus.FAILED);
+        paymentRepository.save(payment);
 
         return mapToResponse(savedOrder);
     }
