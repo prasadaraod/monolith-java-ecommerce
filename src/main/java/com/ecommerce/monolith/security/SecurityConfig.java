@@ -67,14 +67,32 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public access
-                .requestMatchers("/", "/api/auth/**", "/api/db/**", "/actuator/**").permitAll()
+                // Static assets & SPA routes
+                .requestMatchers(
+                    "/",
+                    "/index.html",
+                    "/assets/**",
+                    "/vite.svg",
+                    "/favicon.ico",
+                    "/*.js",
+                    "/*.css",
+                    "/*.png",
+                    "/*.svg"
+                ).permitAll()
+
+                // Public backend APIs & Diagnostics
+                .requestMatchers("/api/auth/**", "/api/db/**", "/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
-                // Protected write operations
+
+                // Product management (Admin only)
                 .requestMatchers(HttpMethod.POST, "/api/v1/products/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/v1/products/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/products/**").hasRole("ADMIN")
-                // Any other request requires authentication
+
+                // Cart, Checkout & User endpoints
+                .requestMatchers("/api/v1/cart/**", "/api/v1/orders/**", "/api/v1/users/**").authenticated()
+
+                // All other requests require authentication
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
