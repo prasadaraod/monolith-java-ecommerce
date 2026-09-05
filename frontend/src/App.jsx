@@ -13,10 +13,13 @@ export default function App() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [message, setMessage] = useState('');
 
-  // Password change state
+  // Password modal
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+
+  // Payment Simulation Option: "SUCCESS" or "FAILED"
+  const [paymentMode, setPaymentMode] = useState('SUCCESS');
 
   useEffect(() => {
     fetchProducts();
@@ -29,8 +32,7 @@ export default function App() {
   const fetchProducts = async () => {
     try {
       const res = await fetch(`${API_BASE}/v1/products`);
-      const data = await res.json();
-      setProducts(data);
+      setProducts(await res.json());
     } catch (err) {
       console.error(err);
     }
@@ -41,11 +43,8 @@ export default function App() {
       const res = await fetch(`${API_BASE}/v1/users/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) {
-        setUser(await res.json());
-      } else {
-        logout();
-      }
+      if (res.ok) setUser(await res.json());
+      else logout();
     } catch (err) {
       logout();
     }
@@ -136,20 +135,28 @@ export default function App() {
     }
   };
 
-  const checkout = async () => {
+  const handleCheckout = async () => {
     try {
       const res = await fetch(`${API_BASE}/v1/orders/checkout`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ simulation: paymentMode })
       });
+      const order = await res.json();
+
       if (res.ok) {
-        const order = await res.json();
-        setMessage(`Order #${order.orderId} placed successfully!`);
+        if (order.status === 'PAID') {
+          setMessage(`Payment Successful! Order #${order.orderId} placed.`);
+        } else {
+          setMessage(`Payment Failed! Order #${order.orderId} was marked as CANCELLED.`);
+        }
         fetchCart();
         fetchProducts();
       } else {
-        const err = await res.json();
-        setMessage(err.message || 'Checkout failed');
+        setMessage(order.message || 'Checkout failed');
       }
     } catch (err) {
       console.error(err);
@@ -300,8 +307,35 @@ export default function App() {
                     <strong>Total:</strong>
                     <strong>₹{cart.totalAmount}</strong>
                   </div>
-                  <button onClick={checkout} style={{ width: '100%', padding: 10, background: '#28a745', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
-                    Checkout Now
+
+                  {/* Dummy Payment Simulator Select */}
+                  <div style={{ margin: '15px 0', padding: 10, background: '#f5f5f5', borderRadius: 4 }}>
+                    <label style={{ display: 'block', fontSize: 13, marginBottom: 5, fontWeight: 'bold' }}>
+                      Mock Payment Gateway Status:
+                    </label>
+                    <select 
+                      value={paymentMode} 
+                      onChange={(e) => setPaymentMode(e.target.value)}
+                      style={{ width: '100%', padding: 6, borderRadius: 4 }}
+                    >
+                      <option value="SUCCESS">Simulate Success (Mark PAID & Deduct Stock)</option>
+                      <option value="FAILED">Simulate Failure (Mark CANCELLED & Retain Stock)</option>
+                    </select>
+                  </div>
+
+                  <button 
+                    onClick={handleCheckout} 
+                    style={{ 
+                      width: '100%', 
+                      padding: 10, 
+                      background: paymentMode === 'SUCCESS' ? '#28a745' : '#dc3545', 
+                      color: '#fff', 
+                      border: 'none', 
+                      borderRadius: 4, 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    {paymentMode === 'SUCCESS' ? 'Pay & Checkout' : 'Trigger Failed Payment'}
                   </button>
                 </>
               ) : (
