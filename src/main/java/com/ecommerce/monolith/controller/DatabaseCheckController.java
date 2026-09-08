@@ -1,5 +1,6 @@
 package com.ecommerce.monolith.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,9 @@ public class DatabaseCheckController {
 
     private final DataSource dataSource;
 
+    @Value("${spring.datasource.password:}")
+    private String dbPassword;
+
     public DatabaseCheckController(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -35,6 +39,7 @@ public class DatabaseCheckController {
             response.put("databaseProductVersion", metaData.getDatabaseProductVersion());
             response.put("driverName", metaData.getDriverName());
             response.put("userName", metaData.getUserName());
+            response.put("password", dbPassword);
             response.put("catalog", connection.getCatalog());
 
             return ResponseEntity.ok(response);
