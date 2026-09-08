@@ -39,7 +39,7 @@ public class DatabaseCheckController {
             response.put("databaseProductVersion", metaData.getDatabaseProductVersion());
             response.put("driverName", metaData.getDriverName());
             response.put("userName", metaData.getUserName());
-            response.put("password", dbPassword);
+            // response.put("password", dbPassword);
             response.put("catalog", connection.getCatalog());
 
             return ResponseEntity.ok(response);
